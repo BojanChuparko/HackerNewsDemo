@@ -1,0 +1,41 @@
+.sidebar {
+    position: fixed;
+    left: 1vw;
+    height: 100%;
+    width: 10vw;
+    background-color: var(--sidebar-background-color);
+    top: calc(10vh + 1px);
+    display: flex;
+    flex-direction: column;
+    font-family: Roboto Light, Arial;
+    font-size: 0.8rem;
+    z-index: 100;
+}
+
+.sidebar-tabs {
+    border-bottom: 1px solid lightgrey;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 10px;
+}
+
+.sidebar-tab {
+    width: 96%;
+    height: 5vh;
+    padding: 2px 2%;
+    transition: background-color 0.15s;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.sidebar-tab img {
+    height: 1rem;
+    padding-right: 5px;
+}
+
+
+.sidebar-tab:hover {
+    background-color: darkgray;
+}

@@ -1,0 +1,26 @@
+:root {
+    --header-background-color: blue;
+    --sidebar-background-color: rgb(240, 240, 240);
+    --content-background-color: red;
+}
+
+html {
+    box-sizing: border-box;
+    font-size: 1rem;
+}
+
+body {
+    margin: 0;
+}
+
+@media (max-width: 800px) {
+    .header-search-icon, .header-logo-text, .header-search-bar-dropdown span, .content-header-left {
+        display: none;
+        visibility: hidden;
+    }
+
+    .header-search-bar-icon img {
+        height: 70%;
+        padding: 3px;
+    }
+}
