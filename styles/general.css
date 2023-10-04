@@ -14,13 +14,26 @@ body {
 }
 
 @media (max-width: 800px) {
-    .header-search-icon, .header-logo-text, .header-search-bar-dropdown span, .content-header-left {
+    .header-search-icon, .header-logo-text, .header-search-bar-dropdown span, .content-header-left, .content-item-time-left, .content-item-link, .sidebar, .header-filter, .content-header{
         display: none;
         visibility: hidden;
+    }
+
+    .content {
+        left: 0;
     }
 
     .header-search-bar-icon img {
         height: 70%;
         padding: 3px;
     }
+
+    .header-search-bar-icon {
+        padding-right: 0.7rem;
+    }
+
+    .sidebar {
+        position: relative;
+    }
+
 }

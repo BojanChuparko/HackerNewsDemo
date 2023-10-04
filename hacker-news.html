@@ -74,16 +74,18 @@
 
       function generateStory(story, sorting) {
           const data = getData(story);
+          let main = $(".content-main");
+          let item = getItem(data);
 
           if(sorting === 'topstories') {
               $(document).ready(function () {
-                  $(".content-main")[0].innerHTML += getItem(data);
+                  main.append(getItem(data));
               })
           }
           else if(sorting === 'beststories') {
               if($(".content-item").length === 0) {
                   $(document).ready(function () {
-                      $(".content-main")[0].innerHTML += getItem(data);
+                      main.append(getItem(data));
                   })
               }
               else {
@@ -97,14 +99,14 @@
                       }
                   })
                   if(flag) {
-                      $(".content-main")[0].innerHTML += getItem(data);
+                      main.append(getItem(data));
                   }
               }
           }
           else {
               if($(".content-item").length === 0) {
                   $(document).ready(function () {
-                      $(".content-main")[0].innerHTML += getItem(data);
+                      main.append(getItem(data));
                   })
               }
               else {
@@ -117,7 +119,7 @@
                       }
                   })
                   if(flag) {
-                      $(".content-main")[0].innerHTML += getItem(data);
+                      main.append(getItem(data));
                   }
               }
           }
@@ -195,7 +197,7 @@
 
 
       function getItem(data) {
-          return `<div class="content-item" value="${data.likes}">
+          /*return `<div class="content-item" value="${data.likes}">
                         <span hidden value="${data.time}"></span>
                         <div class="content-item-left">
                           <div class="content-item-picture">
@@ -214,12 +216,65 @@
                         <div class="content-item-right">
                           <div class="content-item-comments item-info-text">
                             <img class="icon-img" onclick="showComments(this)" src="https://cdn.iconscout.com/icon/free/png-512/free-message-480-434082.png?f=avif&w=256"><span>${data.comments}</span>
-                            <div class="comment-box hidden empty" value="${data.treeId}"><span hidden>${data.treeId}</spanhidden></div>
+                            <div class="comment-box hidden empty" value="${data.treeId}"><span hidden>${data.treeId}</span></div>
                           </div>
                             <img class="icon-img" src="https://cdn.iconscout.com/icon/free/png-512/free-share-1439719-1214291.png?f=avif&w=256">
                             <img class="icon-img" src="https://cdn.iconscout.com/icon/free/png-512/free-star-3661048-3095468.png?f=avif&w=256">
                         </div>
-                      </div>`
+                      </div>`*/
+
+          const item = $(`<div class="content-item" value="${data.likes}"></div>`);
+          const timeValue = $(`<span hidden value="${data.time}"></span>`);
+          item.append(timeValue);
+          const itemLeft = $(`<div class="content-item-left"></div>`);
+          const itemPicture = $(`<div class="content-item-picture"></div>`);
+          const itemPictureLink = $(`<a href="${data.storyUrl}" target="_blank"></a>`);
+          const itemPictureImg = $(`<img src="${data.exampleUrl}">`);
+          itemPictureLink.append(itemPictureImg);
+          itemPicture.append(itemPictureLink);
+          itemLeft.append(itemPicture);
+          const itemInfo = $(`<div class="content-item-info"></div>`);
+          const itemTitle = $(`<div class="content-item-info-title">${data.title}</div>`);
+          itemInfo.append(itemTitle);
+          const additionalInfo = $(`<div class="content-item-info-additional item-info-text"></div>`);
+          const itemPoints = $(`<div class="content-item-points"></div>`);
+          const itemPointsImg = $('<img class="icon-img" onclick="likePost(this)" src="https://cdn.iconscout.com/icon/free/png-512/free-heart-1121-433832.png?f=avif&w=256">');
+          itemPoints.append(itemPointsImg);
+          const itemLikes = $(`<span>${data.likes}</span>`);
+          itemPoints.append(itemLikes);
+          additionalInfo.append(itemPoints);
+          const itemProfile = $(`<div class="content-item-profile"></div>`);
+          const itemAuthor = $(`<span>${data.author}</span>`);
+          itemProfile.append(itemAuthor);
+          additionalInfo.append(itemProfile);
+          const itemTime = $(`<div class="content-item-time-left"></div>`);
+          const itemDate = $(`<span>${data.date}</span>`);
+          itemTime.append(itemDate);
+          const itemLink = $(`<div class="content-item-link"></div>`);
+          const itemUrl = $(`<a target="_blank" href="${data.storyUrl}">${data.fixedUrl}</a>`);
+          itemLink.append(itemUrl);
+          additionalInfo.append(itemTime);
+          additionalInfo.append(itemLink);
+          itemInfo.append(additionalInfo);
+          itemLeft.append(itemInfo);
+          const itemRight = $(`<div class="content-item-right"></div>`);
+          const itemComments = $(`<div class="content-item-comments item-info-text"></div>`);
+          const itemCommentsImg = $(`<img class="icon-img" onclick="showComments(this)" src="https://cdn.iconscout.com/icon/free/png-512/free-message-480-434082.png?f=avif&w=256">`);
+          const itemCommentsNum = $(`<span>${data.comments}</span>`);
+          itemComments.append(itemCommentsImg);
+          itemComments.append(itemCommentsNum);
+          const commentBox = $(`<div class="comment-box hidden empty" value="${data.treeId}"></div>`);
+          const commentId = $(`<span hidden>${data.treeId}</span>`);
+          commentBox.append(commentId);
+          itemComments.append(commentBox);
+          itemRight.append(itemComments);
+          const shareImg = $(`<img class="icon-img" src="https://cdn.iconscout.com/icon/free/png-512/free-share-1439719-1214291.png?f=avif&w=256">`);
+          const starImg = $(`<img class="icon-img" src="https://cdn.iconscout.com/icon/free/png-512/free-star-3661048-3095468.png?f=avif&w=256">`);
+          itemRight.append(shareImg);
+          itemRight.append(starImg);
+          item.append(itemLeft);
+          item.append(itemRight);
+          return item;
       }
 
 
@@ -279,6 +334,7 @@
           }
           const commentBox = $(item).parent().children(".comment-box");
           if(commentBox.hasClass("hidden")) {
+              deactivateComments();
               commentBox.removeClass("hidden");
           }
           else {
@@ -332,8 +388,14 @@
               $(commentBox).html($(commentBox).html() + `<div class="comment" value="${comment.id}"><span class="commenter">${comment.by}:</span><span class="comment-text">${comment.text}</span><hr></div>`)
           }
 
+      }
 
-
+      function deactivateComments() {
+          $(".comment-box").each(function (index, commentBox) {
+              if(!$(commentBox).hasClass("hidden")) {
+                  $(commentBox).addClass("hidden");
+              }
+          })
       }
   </script>
 
