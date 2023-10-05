@@ -12,16 +12,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
-<body onload="test()">
+<body>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
   <script>
       let content = [];
+      let stories = [];
       const exampleUrl = "https://images.examples.com/wp-content/uploads/2017/05/Sample-Article-Writing1.jpg";
       const start = new Date(Date.now());
-      async function count() {
-          await displayPage("topstories");
-      }
-      count();
+      /*async function count() {
+          await*/ displayPage("topstories");
+      //}
+      //count();
       const end = new Date(Date.now());
       const executionTime = end.getTime() - start.getTime();
       $("#exec-time").innerHTML = `${executionTime}`;
@@ -37,7 +38,7 @@
 
           const url = `https://hacker-news.firebaseio.com/v0/${urlElement}.json?print=pretty`;
           const storiesText = getStories(url);
-          const stories = JSON.parse(storiesText);
+          stories = JSON.parse(storiesText);
           $(document).ready(function () {
               document.getElementById("search-results").innerHTML = stories.length;
           })
@@ -45,7 +46,7 @@
       }
 
       function generateContent (stories ,sorting) {
-          for(let i = 0; i < 50; i++) {
+          for(let i = 0; i < 10; i++) {
               $.ajax({
                   type: "GET",
                   url: `https://hacker-news.firebaseio.com/v0/item/${stories[i]}.json?print=pretty`,
@@ -58,7 +59,30 @@
                   }
               });
           }
+          localStorage.setItem("storiesIndex", "" + 10);
       }
+
+
+      $(window).scroll(function() {
+          if($(window).scrollTop() == $(document).height() - $(window).height()) {
+              /*let index = parseInt(localStorage.getItem("storiesIndex"));
+              for(let i = index; i < index + 10; i++) {
+                  $.ajax({
+                      type: "GET",
+                      url: `https://hacker-news.firebaseio.com/v0/item/${stories[i]}.json?print=pretty`,
+                      contentType: "application/json; charset=utf-8",
+                      dataType: "json",
+                      async: true,
+                      success: function (story) {
+                          content.push(story);
+                          generateStory(story, `topstories`);
+                      }
+                  });
+              }
+              localStorage.setItem("storiesIndex", "" + (index + 10));*/
+              alert("test");
+          }
+      });
 
 
       function getStories(url) {
@@ -89,7 +113,6 @@
                   })
               }
               else {
-                  console.log("test");
                   let flag = true;
                   $(".content-item").each(function (index, item) {
                       if (story.score > $(item).attr("value")) {
@@ -185,6 +208,16 @@
           }
       }
 
+
+      function sortContent() {
+          clearContent();
+          const localContent = content.slice(0);
+          localContent.sort(function (a, b) {return b.score - a.score});
+          for(let i = 0; i < localContent.length; i++) {
+              generateStory(localContent[i], 'topstories');
+          }
+      }
+
       function checkFilter(event) {
           if (event.keyCode === 13) {
               filterContent();
@@ -238,7 +271,7 @@
           itemInfo.append(itemTitle);
           const additionalInfo = $(`<div class="content-item-info-additional item-info-text"></div>`);
           const itemPoints = $(`<div class="content-item-points"></div>`);
-          const itemPointsImg = $('<img class="icon-img" onclick="likePost(this)" src="https://cdn.iconscout.com/icon/free/png-512/free-heart-1121-433832.png?f=avif&w=256">');
+          const itemPointsImg = $('<img class="icon-img" src="https://cdn.iconscout.com/icon/free/png-512/free-heart-1121-433832.png?f=avif&w=256">');
           itemPoints.append(itemPointsImg);
           const itemLikes = $(`<span>${data.likes}</span>`);
           itemPoints.append(itemLikes);
@@ -259,7 +292,7 @@
           itemLeft.append(itemInfo);
           const itemRight = $(`<div class="content-item-right"></div>`);
           const itemComments = $(`<div class="content-item-comments item-info-text"></div>`);
-          const itemCommentsImg = $(`<img class="icon-img" onclick="showComments(this)" src="https://cdn.iconscout.com/icon/free/png-512/free-message-480-434082.png?f=avif&w=256">`);
+          const itemCommentsImg = $(`<img class="icon-img" src="https://cdn.iconscout.com/icon/free/png-512/free-message-480-434082.png?f=avif&w=256">`);
           const itemCommentsNum = $(`<span>${data.comments}</span>`);
           itemComments.append(itemCommentsImg);
           itemComments.append(itemCommentsNum);
@@ -274,6 +307,17 @@
           itemRight.append(starImg);
           item.append(itemLeft);
           item.append(itemRight);
+
+          //events
+
+          itemPointsImg.on("click", () => {
+              likePost(itemPointsImg);
+          })
+
+          itemCommentsImg.on("click", () => {
+              showComments(itemCommentsImg);
+          })
+
           return item;
       }
 
@@ -397,12 +441,46 @@
               }
           })
       }
+
+
+      function clearContent() {
+          $(".content-main").html("");
+      }
+
+
+      //event handlers
+      $(document).ready(function () {
+          $(".header-logo").on("click", () => {
+              displayPage('topstories');
+          })
+
+          $(".header-search-bar-input").on("keydown", event => {
+              checkFilter(event);
+          })
+
+          $(".header-search-bar-icon").on("click", () => {
+              filterContent();
+          })
+
+          $("#popularity-filter").on("click", () => {
+              displayPage('beststories');
+          })
+
+          $("#date-filter").on("click", () => {
+              displayPage('newstories')
+          })
+
+          $("body").on("load", () => {
+              test();
+          })
+      })
+
   </script>
 
 
 
   <div class="header row">
-    <div class="header-logo column" onclick="displayPage('topstories')">
+    <div class="header-logo column">
       <div class="header-logo-icon">
         <img class="header-logo-image" src="https://d1sz9gun5ag95e.cloudfront.net/packs/media/images/logo-hn-search-a822432b.png">
       </div>
@@ -419,8 +497,8 @@
             <option>option3</option>
           </select>
         </div>
-        <input class="header-search-bar-input" type="text" placeholder="Search stories by title, url or author" onkeydown="checkFilter(event)"/>
-        <div class="header-search-bar-icon" onclick="filterContent()">
+        <input class="header-search-bar-input" type="text" placeholder="Search stories by title, url or author"/>
+        <div class="header-search-bar-icon">
           <img class="search-img" src="http://www.clker.com/cliparts/F/a/V/Q/Q/9/search-icon-orange-md.png">
         </div>
       </div>
@@ -431,8 +509,8 @@
     </div>
     <div class="header-filter column">
       <div>Sort by:</div>
-      <div class="filter-item" onclick="displayPage('beststories')">Popularity</div>
-      <div class="filter-item" onclick="displayPage('newstories')">Date</div>
+      <div id="popularity-filter" class="filter-item">Popularity</div>
+      <div id="date-filter" class="filter-item">Date</div>
     </div>
   </div>
   <div class="sidebar">
