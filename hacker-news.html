@@ -2,36 +2,44 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Hacker News</title>
-  <link rel="stylesheet" href="styles/general.css">
+  <title>Title</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <link rel="stylesheet" href="styles/header.css">
+  <link rel="stylesheet" href="styles/general.css">
   <link rel="stylesheet" href="styles/sidebar.css">
   <link rel="stylesheet" href="styles/content.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 </head>
 <body>
+
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+
   <script>
       let content = [];
       let stories = [];
+      let contentCounter = 0;
       const exampleUrl = "https://images.examples.com/wp-content/uploads/2017/05/Sample-Article-Writing1.jpg";
       const start = new Date(Date.now());
-      /*async function count() {
-          await*/ displayPage("topstories");
-      //}
-      //count();
+      //$(document).ready(function () {
+      displayPage("topstories");
+      //})
       const end = new Date(Date.now());
       const executionTime = end.getTime() - start.getTime();
-      $("#exec-time").innerHTML = `${executionTime}`;
+      $(document).ready(function () {
+          test();
+      })
 
 
 
       function displayPage(urlElement) {
+          contentCounter = 0;
+          setScrollTop();
           $(document).ready(function () {
-              $(".content-main")[0].innerHTML = "";
+              $(".main-content")[0].innerHTML = "";
               content = [];
           })
 
@@ -40,13 +48,27 @@
           const storiesText = getStories(url);
           stories = JSON.parse(storiesText);
           $(document).ready(function () {
-              document.getElementById("search-results").innerHTML = stories.length;
+              document.getElementsByClassName("search-results")[0].innerHTML = stories.length;
           })
           generateContent(stories, urlElement);
       }
 
+      function getStories(url) {
+          return $.ajax({
+              type: "GET",
+              url: url,
+              contentType: "application/json; charset=utf-8",
+              dataType: "json",
+              async: false
+          }).responseText;
+      }
+
       function generateContent (stories ,sorting) {
-          for(let i = 0; i < 10; i++) {
+          for(let i = contentCounter; i < contentCounter + 10; i++) {
+              if(i === stories.length) {
+                  removeScrollEvent();
+                  break;
+              }
               $.ajax({
                   type: "GET",
                   url: `https://hacker-news.firebaseio.com/v0/item/${stories[i]}.json?print=pretty`,
@@ -59,58 +81,20 @@
                   }
               });
           }
-          localStorage.setItem("storiesIndex", "" + 10);
+          contentCounter += 10;
       }
-
-
-      $(window).scroll(function() {
-          if($(window).scrollTop() == $(document).height() - $(window).height()) {
-              /*let index = parseInt(localStorage.getItem("storiesIndex"));
-              for(let i = index; i < index + 10; i++) {
-                  $.ajax({
-                      type: "GET",
-                      url: `https://hacker-news.firebaseio.com/v0/item/${stories[i]}.json?print=pretty`,
-                      contentType: "application/json; charset=utf-8",
-                      dataType: "json",
-                      async: true,
-                      success: function (story) {
-                          content.push(story);
-                          generateStory(story, `topstories`);
-                      }
-                  });
-              }
-              localStorage.setItem("storiesIndex", "" + (index + 10));*/
-              alert("test");
-          }
-      });
-
-
-      function getStories(url) {
-          return $.ajax({
-              type: "GET",
-              url: url,
-              contentType: "application/json; charset=utf-8",
-              dataType: "json",
-              async: false
-          }).responseText;
-      }
-
 
       function generateStory(story, sorting) {
           const data = getData(story);
-          let main = $(".content-main");
+          let main = $(".main-content");
           let item = getItem(data);
 
           if(sorting === 'topstories') {
-              $(document).ready(function () {
-                  main.append(getItem(data));
-              })
+              main.append(item);
           }
           else if(sorting === 'beststories') {
               if($(".content-item").length === 0) {
-                  $(document).ready(function () {
-                      main.append(getItem(data));
-                  })
+                  main.append(getItem(data));
               }
               else {
                   let flag = true;
@@ -128,9 +112,7 @@
           }
           else {
               if($(".content-item").length === 0) {
-                  $(document).ready(function () {
-                      main.append(getItem(data));
-                  })
+                  main.append(getItem(data));
               }
               else {
                   let flag = true;
@@ -149,15 +131,20 @@
 
       }
 
-
       function getData(story) {
           const data = {};
           data.exampleUrl = exampleUrl;
           data.title = story.title;
           data.author = story.by;
-          data.storyUrl = story.url;
-          const urlParts = data.storyUrl.split("/");
-          data.fixedUrl = `https://${urlParts[2]}`;
+          data.storyUrl = "";
+          data.fixedUrl = "";
+          if(story.url !== undefined) {
+              data.storyUrl = story.url;
+              const urlParts = data.storyUrl.split("/");
+              if(urlParts.length >= 3) {
+                  data.fixedUrl = `https://${urlParts[2]}`;
+              }
+          }
           data.treeId = story.id;
           const time = story.time;
           //const imgUrl = getImage(storyUrl);
@@ -173,6 +160,7 @@
               `<a>${commentCount} comments</a>`;
           return data;
       }
+
 
 
       function likePost(item) {
@@ -191,30 +179,21 @@
           }
       }
 
-
-
-
       function filterContent() {
-          let searchBar = $(".header-search-bar-input");
+          removeScrollEvent();
+          let searchBar = $("#search-input");
           let string = searchBar.val().slice(0);
           string = string.toLowerCase();
+          console.log(string);
           searchBar.val("");
-
-          $(".content-main")[0].innerHTML = "";
-          for(let i = 0; i < content.length; i++) {
-              if(content[i].title.toLowerCase().includes(string) || content[i].url.toLowerCase().includes(string) || content[i].by.toLowerCase().includes(string)) {
-                  generateStory(content[i], 'topstories');
-              }
-          }
-      }
-
-
-      function sortContent() {
-          clearContent();
-          const localContent = content.slice(0);
-          localContent.sort(function (a, b) {return b.score - a.score});
-          for(let i = 0; i < localContent.length; i++) {
-              generateStory(localContent[i], 'topstories');
+          console.log(content);
+          const filteredContent = content.filter(item => ((item.title != undefined && item.title.toLowerCase().includes(string)) ||
+              (item.url !== undefined && item.url.toLowerCase().includes(string)) ||
+              (item.by != undefined && item.by.toLowerCase().includes(string))));
+          $(".main-content")[0].innerHTML = "";
+          for(let i = 0; i < filteredContent.length; i++) {
+              console.log(filteredContent[i].title);
+              generateStory(filteredContent[i], 'topstories')
           }
       }
 
@@ -225,114 +204,86 @@
       }
 
       function test() {
-          document.getElementById("exec-time").innerHTML = `${executionTime / 1000}`;
+          $("#exec-time").html(executionTime);
       }
 
-
-      function getItem(data) {
-          /*return `<div class="content-item" value="${data.likes}">
-                        <span hidden value="${data.time}"></span>
-                        <div class="content-item-left">
-                          <div class="content-item-picture">
-                            <a href="${data.storyUrl}" target="_blank"><img src="${data.exampleUrl}"></a>
-                          </div>
-                          <div class="content-item-info">
-                            <div class="content-item-info-title">${data.title}</div>
-                            <div class="content-item-info-additional item-info-text">
-                              <div class="content-item-points"><img class="icon-img" onclick="likePost(this)" src="https://cdn.iconscout.com/icon/free/png-512/free-heart-1121-433832.png?f=avif&w=256"><span>${data.likes}</span></div>
-                              <div class="content-item-profile"><span>${data.author}</span></div>
-                              <div class="content-item-time-left"><span>${data.date}</span></div>
-                              <div class="content-item-link"><a target="_blank" href="${data.storyUrl}">${data.fixedUrl}</a></div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="content-item-right">
-                          <div class="content-item-comments item-info-text">
-                            <img class="icon-img" onclick="showComments(this)" src="https://cdn.iconscout.com/icon/free/png-512/free-message-480-434082.png?f=avif&w=256"><span>${data.comments}</span>
-                            <div class="comment-box hidden empty" value="${data.treeId}"><span hidden>${data.treeId}</span></div>
-                          </div>
-                            <img class="icon-img" src="https://cdn.iconscout.com/icon/free/png-512/free-share-1439719-1214291.png?f=avif&w=256">
-                            <img class="icon-img" src="https://cdn.iconscout.com/icon/free/png-512/free-star-3661048-3095468.png?f=avif&w=256">
-                        </div>
-                      </div>`*/
-
-          const item = $(`<div class="content-item" value="${data.likes}"></div>`);
-          const timeValue = $(`<span hidden value="${data.time}"></span>`);
-          item.append(timeValue);
-          const itemLeft = $(`<div class="content-item-left"></div>`);
-          const itemPicture = $(`<div class="content-item-picture"></div>`);
-          const itemPictureLink = $(`<a href="${data.storyUrl}" target="_blank"></a>`);
-          const itemPictureImg = $(`<img src="${data.exampleUrl}">`);
+      function getItem(story) {
+          const item = $(`<div class="row content-item pb-1" value="${story.likes}"></div>`);
+          const timeSpan = $(`<span class="hidden" value="${story.time}">`);
+          item.append(timeSpan);
+          const itemLeft = $(`<div class="col-lg-8 content-left"></div>`);
+          const itemLeftRow = $(`<div class="row d-flex align-items-center"></div>`);
+          const itemPicture = $(`<div class="item-picture pr-4"></div>`);
+          const itemPictureLink = $(`<a target="_blank" href="${story.storyUrl}"></a>`);
+          const itemPictureImg = $(`<img style="height: 5rem" src="${story.exampleUrl}">`);
           itemPictureLink.append(itemPictureImg);
           itemPicture.append(itemPictureLink);
-          itemLeft.append(itemPicture);
-          const itemInfo = $(`<div class="content-item-info"></div>`);
-          const itemTitle = $(`<div class="content-item-info-title">${data.title}</div>`);
+          itemLeftRow.append(itemPicture);
+          const itemInfo = $(`<div class="col-lg-10 item-info"></div>`);
+          const itemTitle = $(`<div class="row item-title py-1"></div>`);
+          const titleText = $(`<span>${story.title}</span>`);
+          itemTitle.append(titleText);
           itemInfo.append(itemTitle);
-          const additionalInfo = $(`<div class="content-item-info-additional item-info-text"></div>`);
-          const itemPoints = $(`<div class="content-item-points"></div>`);
-          const itemPointsImg = $('<img class="icon-img" src="https://cdn.iconscout.com/icon/free/png-512/free-heart-1121-433832.png?f=avif&w=256">');
-          itemPoints.append(itemPointsImg);
-          const itemLikes = $(`<span>${data.likes}</span>`);
-          itemPoints.append(itemLikes);
-          additionalInfo.append(itemPoints);
-          const itemProfile = $(`<div class="content-item-profile"></div>`);
-          const itemAuthor = $(`<span>${data.author}</span>`);
-          itemProfile.append(itemAuthor);
-          additionalInfo.append(itemProfile);
-          const itemTime = $(`<div class="content-item-time-left"></div>`);
-          const itemDate = $(`<span>${data.date}</span>`);
-          itemTime.append(itemDate);
-          const itemLink = $(`<div class="content-item-link"></div>`);
-          const itemUrl = $(`<a target="_blank" href="${data.storyUrl}">${data.fixedUrl}</a>`);
-          itemLink.append(itemUrl);
-          additionalInfo.append(itemTime);
-          additionalInfo.append(itemLink);
-          itemInfo.append(additionalInfo);
-          itemLeft.append(itemInfo);
-          const itemRight = $(`<div class="content-item-right"></div>`);
-          const itemComments = $(`<div class="content-item-comments item-info-text"></div>`);
-          const itemCommentsImg = $(`<img class="icon-img" src="https://cdn.iconscout.com/icon/free/png-512/free-message-480-434082.png?f=avif&w=256">`);
-          const itemCommentsNum = $(`<span>${data.comments}</span>`);
-          itemComments.append(itemCommentsImg);
-          itemComments.append(itemCommentsNum);
-          const commentBox = $(`<div class="comment-box hidden empty" value="${data.treeId}"></div>`);
-          const commentId = $(`<span hidden>${data.treeId}</span>`);
+          const itemAdditionalInfo = $(`<div class="row item-additional-info small-text my-text-light"></div>`);
+          const itemPoints = $(`<div class="item-points pr-4"></div>`);
+          const pointsImg = $(`<img class="my-img-fluid get-pointer pr-1" src="https://cdn.iconscout.com/icon/free/png-512/free-heart-1121-433832.png?f=avif&w=256">`);
+          const pointsNum = $(`<span>${story.likes}</span>`);
+          itemPoints.append(pointsImg);
+          itemPoints.append(pointsNum);
+          itemAdditionalInfo.append(itemPoints);
+          const itemAuthor = $(`<div class="item-author pr-4"></div>`);
+          const authorText = $(`<span>${story.author}</span>`);
+          itemAuthor.append(authorText);
+          itemAdditionalInfo.append(itemAuthor);
+          const itemPosted = $(`<div class="item-posted pr-4"></div>`);
+          const postedText = $(`<span>${story.date}</span>`);
+          itemPosted.append(postedText);
+          itemAdditionalInfo.append(itemPosted);
+          const itemLink = $(`<div class="item-link pr-4"></div>`);
+          const linkText = $(`<a target="_blank" href="${story.storyUrl}">${story.fixedUrl}</a>`);
+          itemLink.append(linkText);
+          itemAdditionalInfo.append(itemLink);
+          itemInfo.append(itemAdditionalInfo);
+          itemLeftRow.append(itemInfo);
+          itemLeft.append(itemLeftRow);
+          const itemRight = $('<div class="col-lg-4 content-right d-flex align-items-center justify-content-end"></div>');
+          const itemRightRow = $(`<div class="row my-text-light"></div>`);
+          const comments = $(`<div class="pr-3 comments"></div>`);
+          const commentsImg = $(`<img class="my-img-fluid light-img pr-1 get-pointer" src="https://cdn.iconscout.com/icon/free/png-512/free-message-480-434082.png?f=avif&w=256">`);
+          const commentsText = $(`<span>${story.comments}</span>`);
+          comments.append(commentsImg);
+          comments.append(commentsText);
+          const commentBox = $(`<div value="${story.treeId}" class="comment-box hidden empty"></div>`);
+          const commentId = $(`<span hidden>${story.treeId}</span>`);
           commentBox.append(commentId);
-          itemComments.append(commentBox);
-          itemRight.append(itemComments);
-          const shareImg = $(`<img class="icon-img" src="https://cdn.iconscout.com/icon/free/png-512/free-share-1439719-1214291.png?f=avif&w=256">`);
-          const starImg = $(`<img class="icon-img" src="https://cdn.iconscout.com/icon/free/png-512/free-star-3661048-3095468.png?f=avif&w=256">`);
-          itemRight.append(shareImg);
-          itemRight.append(starImg);
+          comments.append(commentBox);
+          itemRightRow.append(comments);
+          const shareIcon = $(`<div class="pr-3"></div>`);
+          const shareIconImg = $(`<img class="my-img-fluid light-img" src="https://cdn.iconscout.com/icon/free/png-512/free-share-1439719-1214291.png?f=avif&w=256">`);
+          shareIcon.append(shareIconImg);
+          itemRightRow.append(shareIcon);
+          const starIcon = $(`<div class="pr-3"></div>`)
+          const starIconImg = $(`<img class="my-img-fluid light-img" src="https://cdn.iconscout.com/icon/free/png-512/free-star-3661048-3095468.png?f=avif&w=256">`);
+          starIcon.append(starIconImg);
+          itemRightRow.append(starIcon);
+          itemRight.append(itemRightRow);
           item.append(itemLeft);
           item.append(itemRight);
 
           //events
 
-          itemPointsImg.on("click", () => {
-              likePost(itemPointsImg);
+          pointsImg.on("click", () => {
+              likePost(pointsImg);
           })
 
-          itemCommentsImg.on("click", () => {
-              showComments(itemCommentsImg);
+          commentsImg.on("click", () => {
+              showComments(commentsImg);
           })
+
 
           return item;
       }
 
-
-      function getImage(target) {
-          $.ajax({
-              url: "http://api.linkpreview.net",
-              dataType: 'jsonp',
-              data: {q: target, key: '05a7ebea6a14b70fea3da4ee8c9e4aed'},
-              success: function (data) {
-                  //alert(data.image);
-                  return data.image;
-              }
-          });
-      }
 
 
       function treeCount(tree) {
@@ -412,19 +363,19 @@
 
 
           function generateComment(comment, commentBox) {
-              $(document).ready(function () {
-                  if(!commentBox || comment.parent === undefined) {
-                      return;
-                  }
+              //$(document).ready(function () {
+              /*if(commentBox === undefined || comment.parent() === undefined) {
+                  return;
+              }*/
 
-                  if(comment.parent == $(commentBox).attr("value")) {
-                      addComment(comment, commentBox);
-                      return;
-                  }
-                  $(commentBox).children(".comment").each(function (index, item) {
-                      generateComment(comment, item);
-                  })
+              if(comment.parent == $(commentBox).attr("value")) {
+                  addComment(comment, commentBox);
+                  return;
+              }
+              $(commentBox).children(".comment").each(function (index, item) {
+                  generateComment(comment, item);
               })
+              //})
           }
 
 
@@ -442,136 +393,241 @@
           })
       }
 
-
-      function clearContent() {
-          $(".content-main").html("");
+      function addScrollEvent() {
+          $(window).scroll(() => {
+              if($(window).scrollTop() >= $(document).height() - $(window).height() - 1) {
+                  generateContent(stories, 'topstories')
+              }
+          });
       }
 
 
+      function removeScrollEvent() {
+          $(window).unbind(scroll());
+      }
+
+      function setScrollTop() {
+          document.body.scrollTop = document.documentElement.scrollTop = 0;
+      }
+
+
+
       //event handlers
-      $(document).ready(function () {
+      $(document).ready(() => {
+
           $(".header-logo").on("click", () => {
+              addScrollEvent();
               displayPage('topstories');
           })
 
-          $(".header-search-bar-input").on("keydown", event => {
+          $("#search-input").on("keydown", event => {
               checkFilter(event);
           })
 
-          $(".header-search-bar-icon").on("click", () => {
+          $("#search-button").on("click", () => {
               filterContent();
           })
 
           $("#popularity-filter").on("click", () => {
+              addScrollEvent();
               displayPage('beststories');
           })
 
           $("#date-filter").on("click", () => {
+              addScrollEvent();
               displayPage('newstories')
           })
 
           $("body").on("load", () => {
               test();
           })
+
+          addScrollEvent();
       })
+
 
   </script>
 
+  <!--<header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <a class="navbar-brand" href="#">
+        <img class="img-fluid" src="https://d1sz9gun5ag95e.cloudfront.net/packs/media/images/logo-hn-search-a822432b.png">
+        <span>Hacker News Search</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <form class="form-inline my-2 my-lg-0">
+          <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
+      </div>
+    </nav>
+  </header>!-->
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white head container-fluid">
+
+      <div class="col-lg-3 col-2">
+        <a class="navbar-brand header-logo" href="#">
+          <div class="row pl-1">
+            <img style="height: 8vh" class="img-fluid pr-1" src="https://d1sz9gun5ag95e.cloudfront.net/packs/media/images/logo-hn-search-a822432b.png">
+            <span class="my-text-light collapse navbar-collapse">Search Hacker News</span>
+          </div>
+
+        </a>
+      </div>
+      <div class="col-lg-6 col-9">
+        <div class="row">
+          <div class="col-lg-10 col-sm-10">
+            <div style="border: 1px solid lightgray; border-radius: 50vw; background-color: white" class="row">
+              <div class="col-lg-3 col-sm-3 collapse navbar-collapse">
+                <select id="search-select" class="form-control">
+                  <option>select</option>
+                </select>
+              </div>
+              <div class="col-lg-9 col-sm-9">
+                <div class="row">
+                  <div class="col-lg-10 col-sm-10">
+                    <input id="search-input" class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+                  </div>
+                  <div class="col-lg-2 col-sm-2 collapse navbar-collapse">
+                    <button id="search-button" class="btn"><img class="img-fluid" src="http://www.clker.com/cliparts/F/a/V/Q/Q/9/search-icon-orange-md.png"></button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+          <div class="col-lg-2 col-sm-2 collapse navbar-collapse">
+            <span class="pr-1 my-text-light">by</span>
+            <img class="img-fluid" src="https://hn.algolia.com/packs/media/images/logo-algolia-blue-35c461b6.svg">
+          </div>
+        </div>
 
 
-  <div class="header row">
-    <div class="header-logo column">
-      <div class="header-logo-icon">
-        <img class="header-logo-image" src="https://d1sz9gun5ag95e.cloudfront.net/packs/media/images/logo-hn-search-a822432b.png">
       </div>
-      <div class="header-logo-text">
-        Search Hacker News
+      <div class="col-lg-3 col-1">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div id="navbarSupportedContent" class="px-2 collapse navbar-collapse float-right">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0 nav-light">
+            <li class="nav-item">
+              <span class="p-2 filter-text my-text-light">Sort by:</span>
+            </li>
+            <li class="nav-item">
+              <span id="popularity-filter" class="p-2 filter-text my-text-light get-pointer">Popularity</span>
+            </li>
+            <li class="nav-item">
+              <span id="date-filter" class="p-2 filter-text my-text-light get-pointer">Date</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+
+
+    </nav>
+    <nav id="sidebarMenu" class="d-lg-block sidebar sidebar-expand-lg bg-light ml-3">
+      <div class="position-sticky">
+        <div class="list-group list-group-flush pt-2">
+          <a
+                  href="#"
+                  class="list-group-item list-group-item-action ripple bg-light"
+                  aria-current="true"
+          >
+            <img class="my-img-fluid" src="https://cdn.iconscout.com/icon/free/png-512/free-document-1439229-1214239.png?f=avif&w=256">
+            <span class="collapse d-lg-inline">All</span>
+          </a>
+          <a
+                  href="#"
+                  class="list-group-item list-group-item-action ripple bg-light"
+                  aria-current="true"
+          >
+            <img class="my-img-fluid" src="https://cdn.iconscout.com/icon/free/png-512/free-fire-1660433-1408702.png?f=avif&w=256">
+            <span class="collapse d-lg-inline">Hot</span>
+          </a>
+          <a
+                  href="#"
+                  class="list-group-item list-group-item-action ripple bg-light"
+                  aria-current="true"
+          >
+            <img class="my-img-fluid" src="https://cdn.iconscout.com/icon/free/png-512/free-megaphone-1543584-1306087.png?f=avif&w=256">
+            <span class="collapse d-lg-inline">Show HN</span>
+          </a>
+          <a
+                  href="#"
+                  class="list-group-item list-group-item-action ripple bg-light"
+                  aria-current="true"
+          >
+            <img class="my-img-fluid" src="https://cdn.iconscout.com/icon/free/png-512/free-message-1767999-1502335.png?f=avif&w=256">
+            <span class="collapse d-lg-inline">Ask HN</span>
+          </a>
+          <a
+                  href="#"
+                  class="list-group-item list-group-item-action ripple bg-light"
+                  aria-current="true"
+          >
+            <img class="my-img-fluid" src="https://cdn.iconscout.com/icon/free/png-512/free-lightbulb-55-460463.png?f=avif&w=256">
+            <span class="collapse d-lg-inline">Polls</span>
+          </a>
+          <a
+                  href="#"
+                  class="list-group-item list-group-item-action ripple bg-light"
+                  aria-current="true"
+          >
+            <img class="my-img-fluid" src="https://cdn.iconscout.com/icon/free/png-512/free-dollar-coin-1438770-1214099.png?f=avif&w=256">
+            <span class="collapse d-lg-inline">Jobs</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+  </header>
+  <main>
+    <div class="container-fluid content">
+      <div class="row main-header">
+        <div class="col-lg-4">
+          <div class="row header-info d-flex align-items-center">
+            <div class="p-2">
+              <span style="font-size: 2rem">All</span>
+            </div>
+            <div class="p-2 my-text-light">
+              <span class="search-results"></span>
+              results (0.<span id="exec-time">(seconds)</span>
+              seconds)
+            </div>
+            <div>
+              <img class="my-img-fluid light-img" src="https://cdn.iconscout.com/icon/free/png-512/free-share-1439719-1214291.png?f=avif&w=256">
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-8 d-flex align-items-center justify-content-end">
+          <div class="row d-flex justify-content-end mr-2">
+            <div class="p-2">
+              <input type="radio" name="timeframe">
+              <span>Last 24h</span>
+            </div>
+            <div class="p-2">
+              <input type="radio" name="timeframe">
+              <span>Past week</span>
+            </div>
+            <div class="p-2">
+              <input type="radio" name="timeframe">
+              <span>Past month</span>
+            </div>
+            <div class="p-2">
+              <input type="radio" name="timeframe">
+              <span>Forever</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="main-content container-fluid">
       </div>
     </div>
-    <div class="header-search column">
-      <div class="header-search-bar">
-        <div class="header-search-bar-dropdown">
-          <select class="dropdown-select">
-            <option disabled selected hidden>stories</option>
-            <option>option2</option>
-            <option>option3</option>
-          </select>
-        </div>
-        <input class="header-search-bar-input" type="text" placeholder="Search stories by title, url or author"/>
-        <div class="header-search-bar-icon">
-          <img class="search-img" src="http://www.clker.com/cliparts/F/a/V/Q/Q/9/search-icon-orange-md.png">
-        </div>
-      </div>
-      <div class="header-search-icon">
-        <span>by</span>
-        <img src="https://hn.algolia.com/packs/media/images/logo-algolia-blue-35c461b6.svg">
-      </div>
-    </div>
-    <div class="header-filter column">
-      <div>Sort by:</div>
-      <div id="popularity-filter" class="filter-item">Popularity</div>
-      <div id="date-filter" class="filter-item">Date</div>
-    </div>
-  </div>
-  <div class="sidebar">
-    <div class="sidebar-tabs column">
-      <div class="sidebar-tab">
-        <img src="https://cdn.iconscout.com/icon/free/png-512/free-document-1439229-1214239.png?f=avif&w=256">
-        <span>All</span>
-      </div>
-      <div class="sidebar-tab">
-        <img src="https://cdn.iconscout.com/icon/free/png-512/free-fire-1660433-1408702.png?f=avif&w=256">
-        <span>Hot</span>
-      </div>
-      <div class="sidebar-tab">
-        <img src="https://cdn.iconscout.com/icon/free/png-512/free-megaphone-1543584-1306087.png?f=avif&w=256">
-        <span>Show HN</span>
-      </div>
-      <div class="sidebar-tab">
-        <img src="https://cdn.iconscout.com/icon/free/png-512/free-message-1767999-1502335.png?f=avif&w=256">
-        <span>Ask HN</span>
-      </div>
-      <div class="sidebar-tab">
-        <img src="https://cdn.iconscout.com/icon/free/png-512/free-lightbulb-55-460463.png?f=avif&w=256">
-        <span>Polls</span>
-      </div>
-      <div class="sidebar-tab">
-        <img src="https://cdn.iconscout.com/icon/free/png-512/free-dollar-coin-1438770-1214099.png?f=avif&w=256">
-        <span>Jobs</span>
-      </div>
-    </div>
-    <div class="sidebar-rest"></div>
-  </div>
-  <div class="content">
-    <div class="content-header">
-      <div class="content-header-left">
-        <div class="big-text">All</div>
-        <div class="info-text"><span id="search-results">697</span> results (<span id="exec-time"></span> seconds)</div>
-        <div class="share-icon">
-          <img src="https://cdn.iconscout.com/icon/free/png-512/free-share-1439719-1214291.png?f=avif&w=256">
-        </div>
-      </div>
-      <div class="content-header-right">
-        <div class="content-header-radio">
-          <input type="radio" name="timeframe">
-          <span>Last 24h</span>
-        </div>
-        <div class="content-header-radio">
-          <input type="radio" name="timeframe">
-          <span>Past week</span>
-        </div>
-        <div class="content-header-radio">
-          <input type="radio" name="timeframe">
-          <span>Past month</span>
-        </div>
-        <div class="content-header-radio">
-          <input type="radio" name="timeframe">
-          <span>Forever</span>
-        </div>
-      </div>
-    </div>
-    <div class="content-main">
-    </div>
-  </div>
+  </main>
 </body>
-</html>
